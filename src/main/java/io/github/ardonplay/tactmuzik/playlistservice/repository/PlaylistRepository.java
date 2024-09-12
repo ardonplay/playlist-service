@@ -1,6 +1,7 @@
 package io.github.ardonplay.tactmuzik.playlistservice.repository;
 
 import io.github.ardonplay.tactmuzik.playlistservice.entity.PlaylistEntity;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.cassandra.repository.CassandraRepository;
@@ -11,5 +12,8 @@ public interface PlaylistRepository extends CassandraRepository<PlaylistEntity, 
 
   @Query("SELECT * FROM playlists where id = :id")
   Optional<PlaylistEntity> findByPlaylistId(@Param("id") UUID id);
+
+  @Query("SELECT * FROM playlists_by_user_id WHERE user_id = :user_id")
+  List<PlaylistEntity> findAllByUserId(@Param("user_id") UUID userId);
 
 }

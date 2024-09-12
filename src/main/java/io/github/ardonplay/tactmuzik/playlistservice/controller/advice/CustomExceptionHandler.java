@@ -4,6 +4,7 @@ import static io.github.ardonplay.tactmuzik.playlistservice.util.UtilService.cre
 
 import io.github.ardonplay.tactmuzik.playlistservice.exception.ErrorResponse;
 import io.github.ardonplay.tactmuzik.playlistservice.exception.PlaylistNotFoundException;
+import io.github.ardonplay.tactmuzik.playlistservice.exception.TrackNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
@@ -28,5 +29,13 @@ public class CustomExceptionHandler {
         return createErrorResponse(exception);
     }
 
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(TrackNotFoundException.class)
+    @ResponseBody
+    public ErrorResponse handleBoxNotFoundException(TrackNotFoundException exception) {
+        log.info(LOG_STRING_TEMPLATE, exception.getCode(), exception.getMessage());
+        return createErrorResponse(exception);
+    }
 
 }

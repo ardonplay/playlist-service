@@ -5,7 +5,7 @@ public class TrackNotFoundException extends BasePlaylistServiceException {
   private static final String ERROR_MESSAGE = "Track not found";
 
   public TrackNotFoundException() {
-    super(ERROR_MESSAGE, ERROR_MESSAGE);
+    super(ERROR_MESSAGE, ERROR_CODE);
   }
 
 }

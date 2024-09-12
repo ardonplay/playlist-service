@@ -9,14 +9,12 @@ import io.github.ardonplay.tactmuzik.playlistservice.entity.PlaylistTrackEntity;
 import io.github.ardonplay.tactmuzik.playlistservice.entity.TrackEntity;
 import io.github.ardonplay.tactmuzik.playlistservice.exception.PlaylistNotFoundException;
 import io.github.ardonplay.tactmuzik.playlistservice.exception.TrackNotFoundException;
-import io.github.ardonplay.tactmuzik.playlistservice.repository.PlaylistByUserIdRepository;
 import io.github.ardonplay.tactmuzik.playlistservice.repository.PlaylistRepository;
 import io.github.ardonplay.tactmuzik.playlistservice.repository.PlaylistTrackRepository;
 import io.github.ardonplay.tactmuzik.playlistservice.repository.TrackRepository;
 import io.github.ardonplay.tactmuzik.playlistservice.service.PlaylistService;
 import io.github.ardonplay.tactmuzik.playlistservice.util.mapper.PlaylistMapper;
 import io.github.ardonplay.tactmuzik.playlistservice.util.mapper.TrackMapper;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -31,8 +29,6 @@ public class PlaylistServiceImpl implements PlaylistService {
   private final PlaylistRepository playlistRepository;
 
   private final PlaylistTrackRepository playlistTrackRepository;
-
-  private final PlaylistByUserIdRepository playlistByUserIdRepository;
 
   private final TrackRepository trackRepository;
 
@@ -50,13 +46,14 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     var tracks = playlistTrackEntities.stream().map(trackMapper::mapTrackEntityToTrackDto).toList();
 
-    return new PlaylistByIdDto(playlistId, playlistEntity.getName(),playlistEntity.getDescription(), tracks);
+    return new PlaylistByIdDto(playlistId, playlistEntity.getName(),
+        playlistEntity.getDescription(), tracks);
   }
 
   @Override
   public List<PlaylistBaseInfoDto> getUserPlaylists(UUID userId) {
-    return playlistByUserIdRepository.findAllByUserId(userId).stream()
-        .map(playlistMapper::mapPlaylistByUserIdEntityToPlaylistByIdDto).toList();
+    return playlistRepository.findAllByUserId(userId).stream()
+        .map(playlistMapper::mapPlaylistEntityToPlaylistBaseInfoDto).toList();
   }
 
   @Override
@@ -82,7 +79,8 @@ public class PlaylistServiceImpl implements PlaylistService {
   @Override
   public List<TrackDto> getPlaylistTracks(UUID playlistId) {
 
-    List<PlaylistTrackEntity> playlistTracks = playlistTrackRepository.findAllByPlaylistId(playlistId);
+    List<PlaylistTrackEntity> playlistTracks = playlistTrackRepository.findAllByPlaylistId(
+        playlistId);
 
     return playlistTracks
         .stream().map(track -> new TrackDto(track.getTrackId(), track.getName(), track.getS3Path(),
