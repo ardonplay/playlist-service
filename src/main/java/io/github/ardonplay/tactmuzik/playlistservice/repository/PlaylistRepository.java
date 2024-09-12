@@ -6,13 +6,10 @@ import java.util.UUID;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.lang.NonNull;
 
 public interface PlaylistRepository extends CassandraRepository<PlaylistEntity, UUID> {
 
-  @Override
-  @NonNull
   @Query("SELECT * FROM playlists where id = :id")
-  Optional<PlaylistEntity> findById(@Param("id")  @NonNull UUID id);
+  Optional<PlaylistEntity> findByPlaylistId(@Param("id") UUID id);
 
 }

@@ -14,4 +14,5 @@ public interface PlaylistTrackRepository extends CassandraRepository<PlaylistTra
 
   @Query("SELECT * FROM playlists_tracks WHERE playlist_id = :playlist_id")
   List<PlaylistTrackEntity> findAllByPlaylistId(@Param("playlist_id") UUID playlistId);
+
 }

@@ -42,7 +42,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
   @Override
   public PlaylistByIdDto getPlaylist(UUID playlistId) {
-    PlaylistEntity playlistEntity = playlistRepository.findById(playlistId).orElseThrow(
+    PlaylistEntity playlistEntity = playlistRepository.findByPlaylistId(playlistId).orElseThrow(
         PlaylistNotFoundException::new);
 
     List<PlaylistTrackEntity> playlistTrackEntities = playlistTrackRepository.findAllByPlaylistId(
@@ -50,7 +50,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     var tracks = playlistTrackEntities.stream().map(trackMapper::mapTrackEntityToTrackDto).toList();
 
-    return new PlaylistByIdDto(playlistId, playlistEntity.getName(), tracks);
+    return new PlaylistByIdDto(playlistId, playlistEntity.getName(),playlistEntity.getDescription(), tracks);
   }
 
   @Override
@@ -73,7 +73,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
   @Override
   public void changePlaylistDetails(PlaylistDetailsDto playlistDetailsDto, UUID playlistId) {
-    PlaylistEntity playlist = playlistRepository.findById(playlistId)
+    PlaylistEntity playlist = playlistRepository.findByPlaylistId(playlistId)
         .orElseThrow(PlaylistNotFoundException::new);
     playlist.setName(playlistDetailsDto.name());
     playlistRepository.save(playlist);
@@ -82,8 +82,7 @@ public class PlaylistServiceImpl implements PlaylistService {
   @Override
   public List<TrackDto> getPlaylistTracks(UUID playlistId) {
 
-    List<PlaylistTrackEntity> playlistTracks = playlistTrackRepository.findAllById(
-        Collections.singleton(playlistId));
+    List<PlaylistTrackEntity> playlistTracks = playlistTrackRepository.findAllByPlaylistId(playlistId);
 
     return playlistTracks
         .stream().map(track -> new TrackDto(track.getTrackId(), track.getName(), track.getS3Path(),
@@ -96,7 +95,7 @@ public class PlaylistServiceImpl implements PlaylistService {
   public void updatePlaylistTracks(UUID playlistId, List<UUID> trackIds)
       throws TrackNotFoundException, PlaylistNotFoundException {
 
-    PlaylistEntity playlistEntity = playlistRepository.findById(playlistId)
+    PlaylistEntity playlistEntity = playlistRepository.findByPlaylistId(playlistId)
         .orElseThrow(PlaylistNotFoundException::new);
     List<TrackEntity> tracks = trackRepository.findAllById(trackIds);
 
