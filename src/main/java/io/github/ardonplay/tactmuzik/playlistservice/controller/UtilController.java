@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @CrossOrigin("*")
 @RestController
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UtilController {
 
   @PostMapping("/generate_friendly_id/{uuid}")
-  public String generateFriendlyId(@PathVariable UUID uuid) {
-    return FriendlyId.toFriendlyId(uuid);
+  public Mono<String> generateFriendlyId(@PathVariable UUID uuid) {
+    return Mono.just(FriendlyId.toFriendlyId(uuid));
   }
 }

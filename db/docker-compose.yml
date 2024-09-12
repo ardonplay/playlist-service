@@ -1,0 +1,15 @@
+services:
+  cassandra:
+    image: ardonplay/cassandra:latest
+    container_name: cassandra-container
+    build:
+      context: build
+    ports:
+      - "9042:9042"
+    environment:
+      - CASSANDRA_USER=admin
+      - CASSANDRA_PASSWORD=admin
+    volumes:
+      - ./cassandra-data:/var/lib/cassandra
+      - ./init_data/cassandra.yaml:/etc/cassandra/cassandra.yaml
+      - ./init_data:/docker-entrypoint-initdb.d/

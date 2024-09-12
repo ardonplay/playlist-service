@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,16 +26,16 @@ public class UserPlaylistController {
   private final PlaylistService playlistService;
 
   @GetMapping()
-  public ResponseEntity<List<PlaylistBaseInfoDto>> getUserPlaylists(
+  public Flux<PlaylistBaseInfoDto> getUserPlaylists(
       @PathVariable("user_id") UUID userId) {
-    return new ResponseEntity<>(playlistService.getUserPlaylists(userId), HttpStatus.OK);
+    return playlistService.getUserPlaylists(userId);
   }
 
   @PostMapping
-  public ResponseEntity<PlaylistBaseInfoDto> createPlaylist(@PathVariable("user_id") UUID userId,
+  @ResponseStatus(HttpStatus.CREATED)
+  public Mono<PlaylistBaseInfoDto> createPlaylist(@PathVariable("user_id") UUID userId,
       @RequestBody PlaylistDetailsDto createPlaylistDto) {
-    return new ResponseEntity<>(playlistService.createPlaylist(createPlaylistDto, userId),
-        HttpStatus.CREATED);
+    return playlistService.createPlaylist(createPlaylistDto, userId);
   }
 
 

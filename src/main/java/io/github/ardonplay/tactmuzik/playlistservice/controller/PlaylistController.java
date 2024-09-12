@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @RestController
@@ -30,38 +32,37 @@ public class PlaylistController {
   private final PlaylistService playlistService;
 
   @GetMapping("/{id}")
-  public ResponseEntity<PlaylistByIdDto> getPlaylistInfoById(@PathVariable("id") UUID id) {
-    return new ResponseEntity<>(playlistService.getPlaylist(id), HttpStatus.OK);
+  public Mono<PlaylistByIdDto> getPlaylistInfoById(@PathVariable("id") UUID id) {
+    return playlistService.getPlaylist(id);
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<Void> changePlaylistDetails(@PathVariable("id") UUID playlistId,
+  public Mono<Void> changePlaylistDetails(@PathVariable("id") UUID playlistId,
       @RequestBody PlaylistDetailsDto playlistDetailsDto) {
-    playlistService.changePlaylistDetails(playlistDetailsDto, playlistId);
-    return new ResponseEntity<>(HttpStatus.OK);
+    return playlistService.changePlaylistDetails(playlistDetailsDto, playlistId);
   }
 
   @GetMapping("/{id}/tracks")
-  public ResponseEntity<List<TrackDto>> getPlaylistTracks(@PathVariable("id") UUID playlistId) {
-    return new ResponseEntity<>(playlistService.getPlaylistTracks(playlistId), HttpStatus.OK);
+  public Flux<TrackDto> getPlaylistTracks(@PathVariable("id") UUID playlistId) {
+    return playlistService.getPlaylistTracks(playlistId);
   }
 
   @PutMapping("/{id}/tracks")
-  public ResponseEntity<Void> updatePlaylistTracks(@PathVariable("id") UUID playlistId, @RequestBody List<UUID> trackIds) {
-    playlistService.updatePlaylistTracks(playlistId, trackIds);
-    return new ResponseEntity<>(HttpStatus.OK);
+  public Mono<Void> updatePlaylistTracks(@PathVariable("id") UUID playlistId,
+      @RequestBody List<UUID> trackIds) {
+    return playlistService.updatePlaylistTracks(playlistId, trackIds);
   }
 
   @PostMapping("/{id}/tracks")
-  public ResponseEntity<Void> addTracksToPlaylist(@PathVariable("id") UUID playlistId, @RequestBody List<UUID> trackIds) {
-    playlistService.updatePlaylistTracks(playlistId, trackIds);
-    return new ResponseEntity<>(HttpStatus.OK);
+  public Mono<Void> addTracksToPlaylist(@PathVariable("id") UUID playlistId,
+      @RequestBody List<UUID> trackIds) {
+    return playlistService.updatePlaylistTracks(playlistId, trackIds);
   }
 
   @DeleteMapping("/{id}/tracks")
-  public ResponseEntity<Void> deleteTracks(@PathVariable("id") UUID playlistId, @RequestBody List<UUID> trackIds) {
-    playlistService.deletePlaylistTracks(playlistId, trackIds);
-    return new ResponseEntity<>(HttpStatus.OK);
+  public Mono<Void> deleteTracks(@PathVariable("id") UUID playlistId,
+      @RequestBody List<UUID> trackIds) {
+    return playlistService.deletePlaylistTracks(playlistId, trackIds);
   }
 
 }
