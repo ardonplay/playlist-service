@@ -9,6 +9,7 @@ import io.github.ardonplay.tactmuzik.playlistservice.entity.PlaylistTrackEntity;
 import io.github.ardonplay.tactmuzik.playlistservice.entity.TrackEntity;
 import io.github.ardonplay.tactmuzik.playlistservice.exception.PlaylistNotFoundException;
 import io.github.ardonplay.tactmuzik.playlistservice.exception.TrackNotFoundException;
+import io.github.ardonplay.tactmuzik.playlistservice.repository.PlaylistByUserIdRepository;
 import io.github.ardonplay.tactmuzik.playlistservice.repository.PlaylistRepository;
 import io.github.ardonplay.tactmuzik.playlistservice.repository.PlaylistTrackRepository;
 import io.github.ardonplay.tactmuzik.playlistservice.repository.TrackRepository;
@@ -31,6 +32,8 @@ public class PlaylistServiceImpl implements PlaylistService {
 
   private final PlaylistTrackRepository playlistTrackRepository;
 
+  private final PlaylistByUserIdRepository playlistByUserIdRepository;
+
   private final TrackRepository trackRepository;
 
   private final PlaylistMapper playlistMapper;
@@ -42,7 +45,8 @@ public class PlaylistServiceImpl implements PlaylistService {
     PlaylistEntity playlistEntity = playlistRepository.findById(playlistId).orElseThrow(
         PlaylistNotFoundException::new);
 
-    List<PlaylistTrackEntity> playlistTrackEntities = playlistTrackRepository.findAllByPlaylistId(playlistId);
+    List<PlaylistTrackEntity> playlistTrackEntities = playlistTrackRepository.findAllByPlaylistId(
+        playlistId);
 
     var tracks = playlistTrackEntities.stream().map(trackMapper::mapTrackEntityToTrackDto).toList();
 
@@ -51,7 +55,8 @@ public class PlaylistServiceImpl implements PlaylistService {
 
   @Override
   public List<PlaylistBaseInfoDto> getUserPlaylists(UUID userId) {
-    return null;
+    return playlistByUserIdRepository.findAllByUserId(userId).stream()
+        .map(playlistMapper::mapPlaylistByUserIdEntityToPlaylistByIdDto).toList();
   }
 
   @Override

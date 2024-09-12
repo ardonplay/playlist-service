@@ -14,4 +14,5 @@ public interface PlaylistRepository extends CassandraRepository<PlaylistEntity, 
   @NonNull
   @Query("SELECT * FROM playlists where id = :id")
   Optional<PlaylistEntity> findById(@Param("id")  @NonNull UUID id);
+
 }
