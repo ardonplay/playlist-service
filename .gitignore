@@ -17,6 +17,9 @@ bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 
+!db/build/
+db/cassandra-data/
+
 ### IntelliJ IDEA ###
 .idea
 *.iws

@@ -1,16 +1,16 @@
 package io.github.ardonplay.tactmuzik.playlistservice.service;
 
 import io.github.ardonplay.tactmuzik.playlistservice.data.NewTrackDto;
-import io.github.ardonplay.tactmuzik.playlistservice.entity.TrackEntity;
-import java.util.List;
 import java.util.UUID;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public interface TrackService {
 
-  void addTrack(NewTrackDto track);
+  Mono<Void> addTrack(NewTrackDto track);
 
-  void removeTrack(UUID trackId);
+  Mono<Void> removeTrack(UUID trackId);
 
-  void removeTracks(List<UUID> trackIds);
+  Mono<Void> removeTracks(Flux<UUID> trackIds);
 
 }

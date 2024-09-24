@@ -20,6 +20,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @Service
@@ -36,90 +38,108 @@ public class PlaylistServiceImpl implements PlaylistService {
 
   private final TrackMapper trackMapper;
 
+  public Mono<PlaylistByIdDto> getPlaylist(UUID playlistId) {
+
+    Flux<TrackDto> playlistTrackEntities = playlistTrackRepository.findAllByPlaylistId(playlistId)
+        .map(trackMapper::mapTrackEntityToTrackDto);
+
+    return playlistRepository.findByPlaylistId(playlistId)
+        .switchIfEmpty(Mono.error(new PlaylistNotFoundException()))
+        .flatMap(playlist -> playlistTrackEntities.collectList()
+            .map(tracks -> new PlaylistByIdDto(
+                playlistId,
+                playlist.getName(),
+                playlist.getDescription(),
+                tracks
+            ))
+        );
+  }
+
+
   @Override
-  public PlaylistByIdDto getPlaylist(UUID playlistId) {
-    PlaylistEntity playlistEntity = playlistRepository.findByPlaylistId(playlistId).orElseThrow(
-        PlaylistNotFoundException::new);
-
-    List<PlaylistTrackEntity> playlistTrackEntities = playlistTrackRepository.findAllByPlaylistId(
-        playlistId);
-
-    var tracks = playlistTrackEntities.stream().map(trackMapper::mapTrackEntityToTrackDto).toList();
-
-    return new PlaylistByIdDto(playlistId, playlistEntity.getName(),
-        playlistEntity.getDescription(), tracks);
+  public Flux<PlaylistBaseInfoDto> getUserPlaylists(UUID userId) {
+    return playlistRepository.findAllByUserId(userId)
+        .map(playlistMapper::mapPlaylistEntityToPlaylistBaseInfoDto);
   }
 
   @Override
-  public List<PlaylistBaseInfoDto> getUserPlaylists(UUID userId) {
-    return playlistRepository.findAllByUserId(userId).stream()
-        .map(playlistMapper::mapPlaylistEntityToPlaylistBaseInfoDto).toList();
-  }
-
-  @Override
-  public PlaylistBaseInfoDto createPlaylist(PlaylistDetailsDto createPlaylistDto, UUID userId) {
-    return (playlistMapper.mapPlaylistEntityToPlaylistBaseInfoDto(playlistRepository.save(
+  public Mono<PlaylistBaseInfoDto> createPlaylist(PlaylistDetailsDto createPlaylistDto,
+      UUID userId) {
+    return playlistRepository.save(
         PlaylistEntity.builder()
             .id(UUID.randomUUID())
             .name(createPlaylistDto.name())
             .description(createPlaylistDto.description())
-            .userId(userId).build())));
+            .userId(userId).build()).map(playlistMapper::mapPlaylistEntityToPlaylistBaseInfoDto);
 
 
   }
 
   @Override
-  public void changePlaylistDetails(PlaylistDetailsDto playlistDetailsDto, UUID playlistId) {
-    PlaylistEntity playlist = playlistRepository.findByPlaylistId(playlistId)
-        .orElseThrow(PlaylistNotFoundException::new);
-    playlist.setName(playlistDetailsDto.name());
-    playlistRepository.save(playlist);
+  public Mono<Void> changePlaylistDetails(PlaylistDetailsDto playlistDetailsDto, UUID playlistId) {
+    return playlistRepository.findByPlaylistId(playlistId)
+        .switchIfEmpty(Mono.error(new PlaylistNotFoundException())).map(
+            playlistEntity -> {
+              playlistEntity.setName(playlistDetailsDto.name());
+              return playlistRepository.save(playlistEntity);
+            }
+        ).then();
+
   }
 
   @Override
-  public List<TrackDto> getPlaylistTracks(UUID playlistId) {
+  public Flux<TrackDto> getPlaylistTracks(UUID playlistId) {
 
-    List<PlaylistTrackEntity> playlistTracks = playlistTrackRepository.findAllByPlaylistId(
+    Flux<PlaylistTrackEntity> playlistTracks = playlistTrackRepository.findAllByPlaylistId(
         playlistId);
 
     return playlistTracks
-        .stream().map(track -> new TrackDto(track.getTrackId(), track.getName(), track.getS3Path(),
+        .map(track -> new TrackDto(track.getTrackId(), track.getName(), track.getS3Path(),
             track.getS3CoverPath())
-        )
-        .toList();
+        );
   }
 
   @Override
-  public void updatePlaylistTracks(UUID playlistId, List<UUID> trackIds)
+  public Mono<Void> updatePlaylistTracks(UUID playlistId, List<UUID> trackIds)
       throws TrackNotFoundException, PlaylistNotFoundException {
 
-    PlaylistEntity playlistEntity = playlistRepository.findByPlaylistId(playlistId)
-        .orElseThrow(PlaylistNotFoundException::new);
-    List<TrackEntity> tracks = trackRepository.findAllById(trackIds);
+    Flux<TrackEntity> trackEntityFlux = trackRepository.findAllById(trackIds);
 
-    if (tracks.size() != trackIds.size()) {
-      throw new TrackNotFoundException();
-    }
+    return trackEntityFlux.count()
+        .flatMap(count -> {
+          if (count != trackIds.size()) {
+            return Mono.error(new TrackNotFoundException());
+          }
 
-    List<PlaylistTrackEntity> playlistEntities = tracks.stream().map(
-        track -> new PlaylistTrackEntity(playlistId, playlistEntity.getName(),
-            playlistEntity.getUserId(), track)).toList();
-
-    playlistTrackRepository.saveAll(playlistEntities);
-
+          return playlistRepository.findByPlaylistId(playlistId)
+              .switchIfEmpty(Mono.error(new PlaylistNotFoundException()))
+              .flatMap(playlistEntity -> {
+                Flux<PlaylistTrackEntity> tracks = trackEntityFlux.map(
+                    track -> new PlaylistTrackEntity(
+                        playlistId,
+                        playlistEntity.getName(),
+                        playlistEntity.getUserId(),
+                        track
+                    )
+                );
+                return playlistTrackRepository.saveAll(tracks).then();
+              });
+        });
   }
 
+
   @Override
-  public void deletePlaylistTracks(UUID playlistId, List<UUID> trackIds) {
-    List<PlaylistTrackEntity> tracks = playlistTrackRepository.findAllByIdAndTrackIdIn(playlistId,
+  public Mono<Void> deletePlaylistTracks(UUID playlistId, List<UUID> trackIds) {
+    Flux<PlaylistTrackEntity> tracks = playlistTrackRepository.findAllByIdAndTrackIdIn(playlistId,
         trackIds);
 
-    if (tracks.size() != trackIds.size()) {
-      throw new TrackNotFoundException();
-    }
-
-    playlistTrackRepository.deleteAll(tracks);
-
+    return tracks.count()
+        .flatMap(count -> {
+          if (count != trackIds.size()) {
+            return Mono.error(new TrackNotFoundException());
+          }
+          return playlistTrackRepository.deleteAll(tracks);
+        });
   }
 
 

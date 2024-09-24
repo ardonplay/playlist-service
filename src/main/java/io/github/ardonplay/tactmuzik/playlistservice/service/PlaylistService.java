@@ -9,19 +9,21 @@ import io.github.ardonplay.tactmuzik.playlistservice.exception.TrackNotFoundExce
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public interface PlaylistService {
-  PlaylistByIdDto getPlaylist(UUID playlistId);
+  Mono<PlaylistByIdDto> getPlaylist(UUID playlistId);
 
-  List<PlaylistBaseInfoDto> getUserPlaylists(UUID userId);
+  Flux<PlaylistBaseInfoDto> getUserPlaylists(UUID userId);
 
-  PlaylistBaseInfoDto createPlaylist(PlaylistDetailsDto createPlaylistDto, UUID userId);
+  Mono<PlaylistBaseInfoDto> createPlaylist(PlaylistDetailsDto createPlaylistDto, UUID userId);
 
-  void changePlaylistDetails(PlaylistDetailsDto playlistDetailsDto, UUID playlistId);
+  Mono<Void> changePlaylistDetails(PlaylistDetailsDto playlistDetailsDto, UUID playlistId);
 
-  List<TrackDto> getPlaylistTracks(UUID playlistId);
+  Flux<TrackDto> getPlaylistTracks(UUID playlistId);
 
-  void updatePlaylistTracks(UUID playlistId, List<UUID> trackIds) throws PlaylistNotFoundException, TrackNotFoundException;
+  Mono<Void> updatePlaylistTracks(UUID playlistId, List<UUID> trackIds) throws PlaylistNotFoundException, TrackNotFoundException;
 
-  void deletePlaylistTracks(UUID playlistId, List<UUID> trackIds);
+  Mono<Void> deletePlaylistTracks(UUID playlistId, List<UUID> trackIds);
 }
