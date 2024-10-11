@@ -1,6 +1,7 @@
 package io.github.ardonplay.tactmuzik.playlistservice.controller;
 
 import io.github.ardonplay.tactmuzik.playlistservice.data.NewTrackDto;
+import io.github.ardonplay.tactmuzik.playlistservice.data.UpdateTrackDto;
 import io.github.ardonplay.tactmuzik.playlistservice.entity.TrackEntity;
 import io.github.ardonplay.tactmuzik.playlistservice.service.TrackService;
 import java.net.URI;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -33,9 +35,14 @@ public class TrackController {
     return trackService.addTrack(track);
   }
 
-  @DeleteMapping()
-  public Mono<Void> deleteTrack(@RequestBody Flux<UUID> trackIds) {
+  @PutMapping()
+  @ResponseStatus(HttpStatus.ACCEPTED)
+  public Mono<Void> updateTrack(@RequestBody UpdateTrackDto track) {
+    return trackService.updateTrack(track).then();
+  }
 
+  @DeleteMapping()
+  public Mono<Void> deleteTrack(@RequestBody List<UUID> trackIds) {
     return trackService.removeTracks(trackIds);
   }
 }

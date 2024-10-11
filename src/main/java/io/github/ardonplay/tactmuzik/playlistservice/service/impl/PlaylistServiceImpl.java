@@ -41,7 +41,7 @@ public class PlaylistServiceImpl implements PlaylistService {
   public Mono<PlaylistByIdDto> getPlaylist(UUID playlistId) {
 
     Flux<TrackDto> playlistTrackEntities = playlistTrackRepository.findAllByPlaylistId(playlistId)
-        .map(trackMapper::mapTrackEntityToTrackDto);
+        .map(trackMapper::mapPlaylistTrackEntityToTrackDto);
 
     return playlistRepository.findByPlaylistId(playlistId)
         .switchIfEmpty(Mono.error(new PlaylistNotFoundException()))

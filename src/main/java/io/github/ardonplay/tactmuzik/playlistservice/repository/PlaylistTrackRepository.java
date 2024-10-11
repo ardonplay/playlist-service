@@ -17,4 +17,7 @@ public interface PlaylistTrackRepository extends
   @Query("SELECT * FROM playlists_tracks WHERE playlist_id = :playlist_id")
   Flux<PlaylistTrackEntity> findAllByPlaylistId(@Param("playlist_id") UUID playlistId);
 
+
+  @Query("SELECT * FROM playlist_tracks_by_track_id WHERE track_id = :track_id")
+  Flux<PlaylistTrackEntity> findAllByTrackId(@Param("track_id") UUID trackId);
 }

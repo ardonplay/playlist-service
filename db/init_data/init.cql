@@ -48,5 +48,10 @@ CREATE MATERIALIZED VIEW playlists_by_user_id AS
     PRIMARY KEY (user_id, id);
 
 
+CREATE MATERIALIZED VIEW playlist_tracks_by_track_id AS
+    SELECT * FROM playlists_tracks WHERE playlist_id IS NOT NULL AND track_id IS NOT NULL
+    PRIMARY KEY (track_id, playlist_id);
+
+
 
 
